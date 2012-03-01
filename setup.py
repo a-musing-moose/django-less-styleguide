@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 from setuptools import setup, find_packages
 
-setup(name='less-style-guide',
+setup(name='django-less-styleguide',
       version='0.0.1',
-      url='https://github.com/tangentlabs/less-style-guide',
+      url='https://github.com/a-musing-moose/django-less-styleguide',
       author="Jonathan Moss",
       author_email="jonathan.moss@tangentone.com.au",
       description="A Style Guide Generator for LESS files",
