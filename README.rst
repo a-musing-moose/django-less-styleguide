@@ -17,6 +17,7 @@ Edit your ``settings.py`` to set the following settings::
 You will also need to add ``styleguide`` to you list of installed apps and
 add ``styleguide.urls`` to your url config.
 
+=========
 Changelog
 =========
 
