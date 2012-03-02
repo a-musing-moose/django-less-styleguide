@@ -90,13 +90,12 @@ STATE_FINISHED = 99
 
 class Parser():
 
-    _state = STATE_NONE
-    _stack = ""
-    _var = None
-    _variables = []
-    _line_no = 0
-
     def __init__(self, tokenizer):
+        self._variables = []
+        self._state = STATE_NONE
+        self._stack = ""
+        self._var = Variable
+        self._line_no = 1
         self._tokenizer = tokenizer
 
     def _add_to_stack(self, char):
@@ -150,6 +149,8 @@ class Parser():
             self._get_stack()
             self._add_to_stack(token.value)
             self._var.line_number = self._line_no
+        else:
+            self._add_to_stack(token.value)
 
     def _is_open_curl(self, token):
         self._set_state(STATE_IN_BLOCK)

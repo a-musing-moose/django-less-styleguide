@@ -2,22 +2,27 @@
 
 {% for f, vars in less_variables.items %}
     <h2>{{ f }} - {{ vars|length }}</h2>
-	<table>
-	   <thead>
-	       <tr>
-		       <th>Name</th>
-		       <th>Value</th>
-		       <th>Line Number</th>
-		   </tr>
-	   </thead>
-	   <tbody>
-	       {% for var in vars %}
-	       <tr>
-	           <td>{{ var.name }}</td>
-	           <td>{{ var.value }}</td>
-	           <td>{{ var.line_number }}</td>
-	       </tr>
-	       {% endfor %}
-	   </tbody>
-	</table>
+    <table>
+       <thead>
+           <tr>
+               <th>Name</th>
+               <th>Value</th>
+               <th>Line Number</th>
+           </tr>
+       </thead>
+       <tbody>
+           {% for var in vars %}
+           <tr>
+               <td>{{ var.name }}</td>
+               <td>
+                   {{ var.value }}
+                   {% if var.value.0 = "#" %}
+                       <div style="display:inline-block;width:2em;height:1em;background-color:{{ var.value }};border-radius:3px;box-shadow: inset -1px -1px 2px #333"></div>
+                   {% endif %}
+               </td>
+               <td>{{ var.line_number }}</td>
+           </tr>
+           {% endfor %}
+       </tbody>
+    </table>
 {% endfor %}
