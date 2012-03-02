@@ -68,10 +68,9 @@ class Variable():
 
     name = None;
     value = None;
-    filepath = None;
 
     def __str__(self):
-        return "%s = %s in %s" % (self.name, self.value, self.filepath)
+        return "%s = %s" % (self.name, self.value)
 
 STATE_NONE = 0
 STATE_VAR = 1
@@ -160,7 +159,6 @@ class Parser():
     def _is_semicolon(self, token):
         if self._is_at_state(STATE_VAL):
             self._var.value = self._get_stack()
-            self._var.filepath = self._tokenizer.filename
             self._variables.append(self._var)
             self._var = Variable()
         self._set_state(STATE_NONE)
@@ -169,7 +167,6 @@ class Parser():
     def _is_newline(self, token):
         if self._is_at_state(STATE_VAL):
             self._var.value = self._get_stack()
-            self._var.filepath = self._tokenizer.filename
             self._variables.append(self._var)
             self._var = Variable()
         self._set_state(STATE_NONE)
