@@ -2,8 +2,8 @@ from django.views.generic import TemplateView
 from django.conf import settings
 from styleguide.parser import Parser, Tokenizer
 
-from glob import glob
-from os.path import join
+import fnmatch
+import os
 
 
 class StyleGuideView(TemplateView):
@@ -25,7 +25,8 @@ class StyleGuideView(TemplateView):
         return context
 
     def get_files_to_parse(self, path):
-        file_list = []
-        for f in glob(join(path, '*.less')):
-            file_list.append(f)
-        return file_list
+        matches = []
+        for root, dirnames, filenames in os.walk(path):
+            for filename in fnmatch.filter(filenames, '*.less'):
+                matches.append(os.path.join(root, filename))
+        return matches
