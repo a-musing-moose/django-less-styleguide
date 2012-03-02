@@ -133,7 +133,9 @@ class Parser():
             TOKEN_MISC: self._is_misc,
             TOKEN_NEWLINE: self._is_newline,
             TOKEN_SEMICOLON: self._is_semicolon,
-            TOKEN_SPACE: self._is_space
+            TOKEN_SPACE: self._is_space,
+            TOKEN_OPEN_CURL: self._is_open_curl,
+            TOKEN_CLOSE_CURL: self._is_close_curl,
         }
 
         for token in self._tokenizer:
