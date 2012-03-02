@@ -18,10 +18,7 @@ class StyleGuideView(TemplateView):
             t = Tokenizer(f)
             p = Parser(t)
             for var in p.variables:
-                context['less_variables'].append({
-                     'name': var,
-                     'value': p.variables[var]
-                 })
+                context['less_variables'].append(var)
         return context
 
     def get_files_to_parse(self, path):
