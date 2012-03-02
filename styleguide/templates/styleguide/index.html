@@ -1,6 +1,18 @@
+<style>
+
+.colour_block {
+    display:inline-block;
+    width:2em;
+    height:1em;
+    border-radius:3px;
+    box-shadow: inset -1px -1px 2px #333
+}
+
+</style>
 <h1>Less Variables</h1>
 
 {% for f, vars in less_variables.items %}
+    {% if vars|length > 0 %}
     <h2>{{ f }} - {{ vars|length }}</h2>
     <table>
        <thead>
@@ -17,7 +29,7 @@
                <td>
                    {{ var.value }}
                    {% if var.value.0 = "#" %}
-                       <div style="display:inline-block;width:2em;height:1em;background-color:{{ var.value }};border-radius:3px;box-shadow: inset -1px -1px 2px #333"></div>
+                       <div class="colour_block" style="background-color:{{ var.value }};"></div>
                    {% endif %}
                </td>
                <td>{{ var.line_number }}</td>
@@ -25,4 +37,5 @@
            {% endfor %}
        </tbody>
     </table>
+    {% endif %}
 {% endfor %}
