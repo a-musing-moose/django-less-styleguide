@@ -31,9 +31,11 @@ class Token():
 
 class Tokenizer():
 
+    filename = None
     f = None
 
     def __init__(self, filename):
+        self.filename = filename
         self.f = open(filename, 'r')
 
     def __iter__(self):
@@ -61,6 +63,16 @@ class Tokenizer():
 
         return token
 
+
+class Variable():
+
+    name = None;
+    value = None;
+    filepath = None;
+
+    def __str__(self):
+        return "%s = %s in %s" % (self.name, self.value, self.filepath)
+
 STATE_NONE = 0
 STATE_VAR = 1
 STATE_VAL = 2
@@ -68,18 +80,27 @@ STATE_FINISHED = 4
 
 class Parser():
 
-
-
-    _tokenizer = None
     _state = STATE_NONE
-
-    _current_variable = ""
-    _current_value = ""
-
-    _variables = {}
+    _stack = ""
+    _var = None
+    _variables = []
 
     def __init__(self, tokenizer):
         self._tokenizer = tokenizer
+
+    def _add_to_stack(self, char):
+        self._stack = self._stack + char
+
+    def _get_stack(self):
+        s = self._stack
+        self._stack = ""
+        return s.strip()
+
+    def _set_state(self, state):
+        self._state = state
+
+    def _is_at_state(self, state):
+        return state == self._state
 
     @property
     def variables(self):
@@ -92,40 +113,64 @@ class Parser():
 
     def _parse(self):
 
+        self._var = Variable()
+
         dispatcher = {
-            STATE_NONE: self._in_none,
-            STATE_VAR: self._in_var,
-            STATE_VAL: self._in_val
+            TOKEN_ALPHANUM: self._is_alphanum,
+            TOKEN_AT: self._is_at,
+            TOKEN_COLON: self._is_colon,
+            TOKEN_MISC: self._is_misc,
+            TOKEN_NEWLINE: self._is_newline,
+            TOKEN_SEMICOLON: self._is_semicolon,
+            TOKEN_SPACE: self._is_space
         }
 
         for token in self._tokenizer:
-            f = dispatcher[self._state]
+            f = dispatcher[token.token_type]
             f(token)
 
         self.state = STATE_FINISHED
 
-    def _in_none(self, token):
-        if TOKEN_AT == token.token_type:
-            self._current_variable = token.value
-            self._state = STATE_VAR
+    def _is_at(self, token):
+        if self._is_at_state(STATE_NONE):
+            self._set_state(STATE_VAR)
+            self._get_stack()
+            self._add_to_stack(token.value)
 
-    def _in_var(self, token):
-        if TOKEN_COLON == token.token_type:
-            self._state = STATE_VAL
-        elif TOKEN_ALPHANUM:
-            self._current_variable += token.value
+    def _is_colon(self, token):
+        if self._is_at_state(STATE_VAR):
+            self._set_state(STATE_VAL)
+            self._var.name = self._get_stack()
         else:
-            self._state = STATE_NONE
-            self._current_variable = ""
+            self._add_to_stack(token.value)
 
+    def _is_alphanum(self, token):
+        self._add_to_stack(token.value)
 
-    def _in_val(self, token):
-        if token.token_type in (TOKEN_SEMICOLON, TOKEN_NEWLINE):
-            self._variables[self._current_variable.strip()] = self._current_value.strip()
-            self._current_value = ""
-            self._current_variable = ""
-            self._state = STATE_NONE
+    def _is_misc(self, token):
+        if self._is_at_state(STATE_VAR):
+            self._set_state(STATE_NONE)
+            self._var = Variable();
         else:
-            self._current_value += token.value
+            self._add_to_stack(token.value)
 
+    def _is_space(self, token):
+        self._add_to_stack(token.value)
 
+    def _is_semicolon(self, token):
+        if self._is_at_state(STATE_VAL):
+            self._var.value = self._get_stack()
+            self._var.filepath = self._tokenizer.filename
+            self._variables.append(self._var)
+            self._var = Variable()
+        self._set_state(STATE_NONE)
+        self._var = Variable()
+
+    def _is_newline(self, token):
+        if self._is_at_state(STATE_VAL):
+            self._var.value = self._get_stack()
+            self._var.filepath = self._tokenizer.filename
+            self._variables.append(self._var)
+            self._var = Variable()
+        self._set_state(STATE_NONE)
+        self._var = Variable()
