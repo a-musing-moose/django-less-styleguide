@@ -1,11 +1,23 @@
 <h1>Less Variables</h1>
 
-{% for f, var in less_variable.items %}
-    <h2>{{ f }}</h2>
-	<dl>
-	    {% for var in vars %}
-	    <dt>{{ var.name }}</dt>
-	    <dd>{{ var.value }}</dd>
-	    {% endfor %}
-	</dl>    
+{% for f, vars in less_variables.items %}
+    <h2>{{ f }} - {{ vars|length }}</h2>
+	<table>
+	   <thead>
+	       <tr>
+		       <th>Name</th>
+		       <th>Value</th>
+		       <th>Line Number</th>
+		   </tr>
+	   </thead>
+	   <tbody>
+	       {% for var in vars %}
+	       <tr>
+	           <td>{{ var.name }}</td>
+	           <td>{{ var.value }}</td>
+	           <td>{{ var.line_number }}</td>
+	       </tr>
+	       {% endfor %}
+	   </tbody>
+	</table>
 {% endfor %}

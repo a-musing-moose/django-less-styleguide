@@ -6,6 +6,8 @@ TOKEN_COLON = '[COLON]'
 TOKEN_SEMICOLON = 'SEMICOLON'
 TOKEN_NEWLINE = '[NEWLINE]'
 TOKEN_MISC = '[MISC]'
+TOKEN_OPEN_CURL = '[OPEN_CURL]'
+TOKEN_CLOSE_CURL = '[CLOSE_CURL]'
 
 TOKENS = (
     TOKEN_AT,
@@ -14,7 +16,9 @@ TOKENS = (
     TOKEN_COLON,
     TOKEN_SEMICOLON,
     TOKEN_NEWLINE,
-    TOKEN_MISC
+    TOKEN_MISC,
+    TOKEN_OPEN_CURL,
+    TOKEN_CLOSE_CURL,
 )
 
 class Token():
@@ -58,6 +62,10 @@ class Tokenizer():
             token = Token(c, TOKEN_SEMICOLON)
         elif "\n" == c:
             token = Token(c, TOKEN_NEWLINE)
+        elif "{" == c:
+            token = Token(c, TOKEN_OPEN_CURL)
+        elif "}" == c:
+            token = Token(c, TOKEN_CLOSE_CURL)
         elif c.isalnum():
             token = Token(c, TOKEN_ALPHANUM)
 
@@ -66,8 +74,9 @@ class Tokenizer():
 
 class Variable():
 
-    name = None;
-    value = None;
+    name = None
+    value = None
+    line_number = None
 
     def __str__(self):
         return "%s = %s" % (self.name, self.value)
@@ -75,7 +84,9 @@ class Variable():
 STATE_NONE = 0
 STATE_VAR = 1
 STATE_VAL = 2
-STATE_FINISHED = 4
+STATE_IN_BLOCK = 3
+STATE_FINISHED = 99
+
 
 class Parser():
 
@@ -83,6 +94,7 @@ class Parser():
     _stack = ""
     _var = None
     _variables = []
+    _line_no = 0
 
     def __init__(self, tokenizer):
         self._tokenizer = tokenizer
@@ -135,8 +147,17 @@ class Parser():
             self._set_state(STATE_VAR)
             self._get_stack()
             self._add_to_stack(token.value)
+            self._var.line_number = self._line_no
+
+    def _is_open_curl(self, token):
+        self._set_state(STATE_IN_BLOCK)
+
+    def _is_close_curl(self, token):
+        self._set_state(STATE_NONE)
 
     def _is_colon(self, token):
+        if self._is_at_state(STATE_IN_BLOCK):
+            return
         if self._is_at_state(STATE_VAR):
             self._set_state(STATE_VAL)
             self._var.name = self._get_stack()
@@ -144,9 +165,13 @@ class Parser():
             self._add_to_stack(token.value)
 
     def _is_alphanum(self, token):
+        if self._is_at_state(STATE_IN_BLOCK):
+            return
         self._add_to_stack(token.value)
 
     def _is_misc(self, token):
+        if self._is_at_state(STATE_IN_BLOCK):
+            return
         if self._is_at_state(STATE_VAR):
             self._set_state(STATE_NONE)
             self._var = Variable();
@@ -154,9 +179,13 @@ class Parser():
             self._add_to_stack(token.value)
 
     def _is_space(self, token):
+        if self._is_at_state(STATE_IN_BLOCK):
+            return
         self._add_to_stack(token.value)
 
     def _is_semicolon(self, token):
+        if self._is_at_state(STATE_IN_BLOCK):
+            return
         if self._is_at_state(STATE_VAL):
             self._var.value = self._get_stack()
             self._variables.append(self._var)
@@ -165,9 +194,12 @@ class Parser():
         self._var = Variable()
 
     def _is_newline(self, token):
+        if self._is_at_state(STATE_IN_BLOCK):
+            return
         if self._is_at_state(STATE_VAL):
             self._var.value = self._get_stack()
             self._variables.append(self._var)
             self._var = Variable()
         self._set_state(STATE_NONE)
         self._var = Variable()
+        self._line_no += 1
